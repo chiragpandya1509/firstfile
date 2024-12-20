@@ -1,0 +1,152 @@
+import flet as ft
+
+data = []  # Initialize an empty list to store data
+
+def home_page(page: ft.Page):
+    # Button to navigate to Page 3
+    button3 = ft.ElevatedButton("Page 3", on_click=lambda e: go_to_page(page, "page3"))
+    page.add(button3)
+
+def page3(page: ft.Page):
+    def refresh_table():
+        table.rows.clear()
+        for person in data:
+            table.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(person["first_name"])),
+                        ft.DataCell(ft.Text(person["last_name"])),
+                        ft.DataCell(ft.Text(person["age"])),
+                    ]
+                )
+            )
+        page.update()
+
+    def add_entry(e):
+        def save_data(e):
+            first_name = first_name_field.value
+            last_name = last_name_field.value
+            age = age_field.value
+
+            if first_name and last_name and age:
+                row = {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "age": age,
+                }
+                data.append(row)
+                dialog.open = False
+                refresh_table()
+            else:
+                dialog.title = ft.Text("Please fill all fields", color="red")
+                page.update()
+
+        first_name_field = ft.TextField(label="First Name")
+        last_name_field = ft.TextField(label="Last Name")
+        age_field = ft.TextField(label="Age", keyboard_type="number")
+
+        dialog = ft.AlertDialog(
+            title=ft.Text("Add Entry"),
+            content=ft.Column(
+                [first_name_field, last_name_field, age_field], spacing=10
+            ),
+            actions=[ft.ElevatedButton("Save", on_click=save_data)],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
+
+    def edit_entry(e):
+        def find_and_edit(e):
+            target_name = search_field.value
+            target_person = next(
+                (person for person in data if person["first_name"].lower() == target_name.lower()),
+                None,
+            )
+
+            if target_person:
+                def save_changes(e):
+                    target_person["first_name"] = first_name_field.value
+                    target_person["last_name"] = last_name_field.value
+                    target_person["age"] = age_field.value
+                    dialog.open = False
+                    refresh_table()
+
+                first_name_field = ft.TextField(
+                    label="First Name", value=target_person["first_name"]
+                )
+                last_name_field = ft.TextField(
+                    label="Last Name", value=target_person["last_name"]
+                )
+                age_field = ft.TextField(
+                    label="Age", value=target_person["age"], keyboard_type="number"
+                )
+
+                dialog.title = ft.Text("Edit Entry")
+                dialog.content = ft.Column(
+                    [first_name_field, last_name_field, age_field], spacing=10
+                )
+                dialog.actions = [
+                    ft.ElevatedButton("Save Changes", on_click=save_changes)
+                ]
+                page.update()
+            else:
+                dialog.title = ft.Text("No record found", color="red")
+                page.update()
+
+        search_field = ft.TextField(label="Enter First Name to Edit")
+
+        dialog = ft.AlertDialog(
+            title=ft.Text("Search for Entry"),
+            content=search_field,
+            actions=[ft.ElevatedButton("Search", on_click=find_and_edit)],
+            actions_alignment=ft.MainAxisAlignment.END,
+        )
+        page.dialog = dialog
+        dialog.open = True
+        page.update()
+
+    # Back button
+    back_button = ft.ElevatedButton("Back to Home", on_click=lambda e: go_to_page(page, "home"))
+
+    # Table
+    table = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("First Name")),
+            ft.DataColumn(ft.Text("Last Name")),
+            ft.DataColumn(ft.Text("Age"), numeric=True),
+        ],
+        rows=[],
+    )
+    refresh_table()
+
+    # Buttons
+    add_button = ft.ElevatedButton("Add Entry", on_click=add_entry)
+    edit_button = ft.ElevatedButton("Edit Entry", on_click=edit_entry)
+
+    page.add(
+        ft.Row([back_button], alignment=ft.MainAxisAlignment.END),
+        ft.Row(
+            [
+                ft.Text("Manage Data", size=24, weight=ft.FontWeight.BOLD),
+            ],
+            alignment=ft.MainAxisAlignment.CENTER,
+        ),
+        table,
+        ft.Row([add_button, edit_button], spacing=10, alignment=ft.MainAxisAlignment.CENTER),
+    )
+
+
+def go_to_page(page: ft.Page, page_name: str):
+    page.clean()
+    if page_name == "home":
+        home_page(page)
+    elif page_name == "page3":
+        page3(page)
+    page.update()
+
+def main(page: ft.Page):
+    go_to_page(page, "home")
+
+ft.app(target=main)
