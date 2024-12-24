@@ -115,18 +115,57 @@ def page2(page: ft.Page):
     )
 
     page.add(gradient_container)
+import flet as ft
+import csv
+import flet as ft
+import csv
 
 def page6(page: ft.Page):
-    # back_button = ft.ElevatedButton("Back to Home", on_click=lambda e: go_to_page(page, "home"))
+    # Header row
     page.add(
         ft.Row(
             controls=[ft.Text("All Data will be shown Here", size=24, weight=ft.FontWeight.BOLD)],
             alignment=ft.MainAxisAlignment.CENTER,
-            spacing=20  # Space between text and back button
+            spacing=20  # Space between text and button
         )
     )
-    page.update()
 
+    # Function to handle button click
+    def button_clicked(e):
+        # Collect the values from the text boxes
+        data = [
+            tb1.value,
+            tb2.value,
+            tb3.value,
+            tb4.value,
+            tb5.value
+        ]
+        
+        # Print values to text field for display
+        t.value = f"Textboxes values are:  '{tb1.value}', '{tb2.value}', '{tb3.value}', '{tb4.value}', '{tb5.value}'."
+        
+        # Write data to CSV
+        with open('C:/Users/asd/Desktop/chiragpandyaflet.csv', mode="a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow(data)  # Write a row with the collected values
+
+        page.update()  # Update the page
+
+    # Create TextBox controls
+    t = ft.Text()
+    tb1 = ft.TextField(label="Standard")
+    tb2 = ft.TextField(label="Disabled", disabled=True, value="First name")
+    tb3 = ft.TextField(label="Read-only", read_only=True, value="Last name")
+    tb4 = ft.TextField(label="With placeholder", hint_text="Please enter text here")
+    tb5 = ft.TextField(label="With an icon", icon=ft.Icons.EMOJI_EMOTIONS)
+
+    # Create the button
+    b = ft.ElevatedButton(text="Submit", on_click=button_clicked)
+
+    # Add TextBoxes and button to the page
+    page.add(tb1, tb2, tb3, tb4, tb5, b, t)
+
+    page.update()  # Final update to the page layout
 
 import flet as ft
 import pandas as pd
