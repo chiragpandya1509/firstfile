@@ -12,11 +12,12 @@ def home_page(page: ft.Page):
     button2 = ft.ElevatedButton("page2", on_click=lambda e: go_to_page(page, "page2"))
     button3 = ft.ElevatedButton("Page3", on_click=lambda e: go_to_page(page, "page3"))
     order = ft.ElevatedButton("Orders", on_click=lambda e: go_to_page(page, "order"))
+    page6 = ft.ElevatedButton("NewPage", on_click=lambda e: go_to_page(page,"page6"))
    
     # Arrange buttons in a column with center alignment and some space between them
     page.add(
         ft.Row(  # Use Column to arrange buttons vertically
-            controls=[button1, button2, button3],
+            controls=[button1, button2, button3,page6],
             alignment=ft.MainAxisAlignment.END,  # Center the buttons vertically
             spacing=20  # Add space between buttons
         )
@@ -115,10 +116,16 @@ def page2(page: ft.Page):
 
     page.add(gradient_container)
 
-
-
-import flet as ft
-import pandas as pd
+def page6(page: ft.Page):
+    # back_button = ft.ElevatedButton("Back to Home", on_click=lambda e: go_to_page(page, "home"))
+    page.add(
+        ft.Row(
+            controls=[ft.Text("All Data will be shown Here", size=24, weight=ft.FontWeight.BOLD)],
+            alignment=ft.MainAxisAlignment.CENTER,
+            spacing=20  # Space between text and back button
+        )
+    )
+    page.update()
 
 
 import flet as ft
@@ -136,9 +143,12 @@ def page3(page: ft.Page):
         # Get selected values from dropdowns
         selected_first_name = dd_first_name.value
         selected_last_name = dd_last_name.value
-        
+        selected_date = dd_date.value  # Ensure we get the selected value
+
         # Filter DataFrame based on the selected values from dropdowns
         filtered_df = df
+        if selected_date:
+            filtered_df = filtered_df[filtered_df["Date"] == selected_date]
         if selected_first_name:
             filtered_df = filtered_df[filtered_df["First_name"] == selected_first_name]
         if selected_last_name:
@@ -165,8 +175,7 @@ def page3(page: ft.Page):
                     ]
                 )
             )
-
-        # Calculate the totals (optional)
+        # Calculate the totals
         total_order = filtered_df['order'].sum()
         total_rate = filtered_df['rate'].sum()
         total_amount = filtered_df['rate'].sum() * filtered_df['order'].sum()
@@ -194,6 +203,7 @@ def page3(page: ft.Page):
         # Clear filters (reset dropdowns to None or default)
         dd_first_name.value = None
         dd_last_name.value = None
+        dd_date.value = None
         page.update()
         # Show all data in the table
         show_all_data()
@@ -265,13 +275,22 @@ def page3(page: ft.Page):
         options=[ft.dropdown.Option(name) for name in df["Last_name"].unique()],
         label="Select Last Name"
     )
+    dd_date = ft.Dropdown(
+        width=200,
+        options=[ft.dropdown.Option(name) for name in df["Date"].unique()],
+        label="Select Date"
+    )
 
     # Add dropdowns, buttons, and text to the page
-    page.add(dd_first_name, dd_last_name, b, reset_button, t)
+    page.add(ft.Row(
+        controls=[dd_first_name, dd_last_name, dd_date, b, reset_button,back_button], 
+        alignment=ft.MainAxisAlignment.CENTER, 
+        spacing=20  # Add space between controls
+    ))
 
     # Arrange content in a row for the buttons and dropdowns
-    page.add(ft.Row(
-        controls=[back_button], alignment=ft.MainAxisAlignment.END))
+    # page.add(ft.Row(
+    #     controls=[back_button], alignment=ft.MainAxisAlignment.END))
 
     page.add(
         ft.Row(
@@ -382,6 +401,8 @@ def go_to_page(page: ft.Page, page_name: str):
         page3(page)
     elif page_name == "order":
         order(page)
+    elif page_name == "page6":
+        page6(page)
     page.update()  # Refresh the page content
 
 def main(page: ft.Page):
