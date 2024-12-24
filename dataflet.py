@@ -1,5 +1,8 @@
 import flet as ft
 import math
+import pandas as pd
+df = pd.read_csv('C:/Users/asd/Desktop/flet.csv')  # Corrected file path
+
 
 def home_page(page: ft.Page):
     page.add(ft.Container(gradient=ft.LinearGradient( begin=ft.alignment.top_left, end=ft.alignment.bottom_right, colors=["#ff7e5f", "#feb47b"], ), expand=True, # This ensures the gradient fills the entire page 
@@ -117,101 +120,200 @@ def page2(page: ft.Page):
 import flet as ft
 import pandas as pd
 
+
+import flet as ft
+import pandas as pd
+
 def page3(page: ft.Page):
-    import datetime
-    page.scroll=ft.ScrollMode.ALWAYS
-    # scroll=ft.ScrollMode.ALWAYS
+    
+    page.scroll = ft.ScrollMode.ALWAYS
     
     # Create a page with centered content
     back_button = ft.ElevatedButton("Back to Home", on_click=lambda e: go_to_page(page, "home"))
+    
+    # Function to handle filtering and updating table based on dropdown selections
+    def button_clicked(e):
+        # Get selected values from dropdowns
+        selected_first_name = dd_first_name.value
+        selected_last_name = dd_last_name.value
+        
+        # Filter DataFrame based on the selected values from dropdowns
+        filtered_df = df
+        if selected_first_name:
+            filtered_df = filtered_df[filtered_df["First_name"] == selected_first_name]
+        if selected_last_name:
+            filtered_df = filtered_df[filtered_df["Last_name"] == selected_last_name]
 
-    # Arrange content in a column, center the text and button, with some spacing
-    page.add(ft.Row(controls=[back_button], alignment=ft.MainAxisAlignment.END))
+        # Clear the current rows in the data table
+        data_table.rows.clear()
+
+        # Add filtered rows to the data table
+        for _, row in filtered_df.iterrows():
+            total = row["rate"] * row["order"]
+            mycheck = row["rate"] - 2
+
+            data_table.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(row['Date'])),
+                        ft.DataCell(ft.Text(row['First_name'])),
+                        ft.DataCell(ft.Text(row['Last_name'])),
+                        ft.DataCell(ft.Text(str(row['order']))),
+                        ft.DataCell(ft.Text(str(row['rate']))),
+                        ft.DataCell(ft.Text(str(total))),
+                        ft.DataCell(ft.Text(str(mycheck))),
+                    ]
+                )
+            )
+
+        # Calculate the totals (optional)
+        total_order = filtered_df['order'].sum()
+        total_rate = filtered_df['rate'].sum()
+        total_amount = filtered_df['rate'].sum() * filtered_df['order'].sum()
+
+        # Add a total row
+        data_table.rows.append(
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text("Total")),
+                    ft.DataCell(ft.Text("")),
+                    ft.DataCell(ft.Text("")),
+                    ft.DataCell(ft.Text(str(total_order))),
+                    ft.DataCell(ft.Text(str(total_rate))),
+                    ft.DataCell(ft.Text(str(total_amount))),
+                    ft.DataCell(ft.Text("")),
+                ]
+            )
+        )
+
+        # Update the page to reflect the changes
+        page.update()
+
+    # Function to reset filters and show all data
+    def reset_button_clicked(e):
+        # Clear filters (reset dropdowns to None or default)
+        dd_first_name.value = None
+        dd_last_name.value = None
+        page.update()
+        # Show all data in the table
+        show_all_data()
+
+    # Function to display all data in the table
+    def show_all_data():
+        # Clear the table first
+        data_table.rows.clear()
+        
+        # Add all rows to the table
+        for _, row in df.iterrows():
+            total = row["rate"] * row["order"]
+            mycheck = row["rate"] - 2
+
+            data_table.rows.append(
+                ft.DataRow(
+                    cells=[
+                        ft.DataCell(ft.Text(row['Date'])),
+                        ft.DataCell(ft.Text(row['First_name'])),
+                        ft.DataCell(ft.Text(row['Last_name'])),
+                        ft.DataCell(ft.Text(str(row['order']))),
+                        ft.DataCell(ft.Text(str(row['rate']))),
+                        ft.DataCell(ft.Text(str(total))),
+                        ft.DataCell(ft.Text(str(mycheck))),
+                    ]
+                )
+            )
+        
+        # Calculate the totals
+        total_order = df['order'].sum()
+        total_rate = df['rate'].sum()
+        total_amount = df['rate'].sum() * df['order'].sum()
+
+        # Add a total row at the bottom
+        data_table.rows.append(
+            ft.DataRow(
+                cells=[
+                    ft.DataCell(ft.Text("Total")),
+                    ft.DataCell(ft.Text("")),
+                    ft.DataCell(ft.Text("")),
+                    ft.DataCell(ft.Text(str(total_order))),
+                    ft.DataCell(ft.Text(str(total_rate))),
+                    ft.DataCell(ft.Text(str(total_amount))),
+                    ft.DataCell(ft.Text("")),
+                ]
+            )
+        )
+
+        # Update the page
+        page.update()
+
+    # Text label for displaying selected value
+    t = ft.Text()
+
+    # Submit button
+    b = ft.ElevatedButton(text="Submit", on_click=button_clicked)
+
+    # Reset button
+    reset_button = ft.ElevatedButton(text="Reset Filters", on_click=reset_button_clicked)
+
+    # Dropdowns for filtering by First name and Last name
+    dd_first_name = ft.Dropdown(
+        width=200,
+        options=[ft.dropdown.Option(name) for name in df["First_name"].unique()],
+        label="Select First Name"
+    )
+    dd_last_name = ft.Dropdown(
+        width=200,
+        options=[ft.dropdown.Option(name) for name in df["Last_name"].unique()],
+        label="Select Last Name"
+    )
+
+    # Add dropdowns, buttons, and text to the page
+    page.add(dd_first_name, dd_last_name, b, reset_button, t)
+
+    # Arrange content in a row for the buttons and dropdowns
+    page.add(ft.Row(
+        controls=[back_button], alignment=ft.MainAxisAlignment.END))
 
     page.add(
         ft.Row(
-            controls=[
-                ft.Text("Welcome to Page 3", size=24, weight=ft.FontWeight.BOLD),
-            ],
+            controls=[ft.Text("All Data will be shown Here", size=24, weight=ft.FontWeight.BOLD)],
             alignment=ft.MainAxisAlignment.CENTER,
             spacing=20  # Space between text and back button
         )
     )
-    #here i am adding date
-    def handle_change(e):
-    # Get the selected date
-        selected_date = e.control.value
-    # Print or display the selected date
-        page.add(ft.Text(f"Date changed: {selected_date.strftime('%Y-%m-%d')}"))
 
-
-    def handle_dismissal(e):
-        page.add(ft.Text(f"DatePicker dismissed"))
-
-    page.add(
-        ft.ElevatedButton(
-            "Pick date",
-            icon=ft.Icons.CALENDAR_MONTH,
-            on_click=lambda e: page.open(
-                ft.DatePicker(
-                    first_date=datetime.datetime(day=1,month=10,year=2023),
-                    last_date=datetime.datetime(day=1,month=12,year=2023),
-                    on_change=handle_change,
-                    on_dismiss=handle_dismissal,
-                )
-            ),
-        )
-    )
-    
-    # Load the CSV file
+    # Load the CSV file (assuming df is already available here)
     try:
-        df = pd.read_csv('C:/Users/asd/Desktop/flet.csv')  # Corrected file path
+        # df = pd.read_csv('C:/Users/asd/Desktop/flet.csv')  # Corrected file path
         if df.empty:
             raise ValueError("CSV file is empty.")
     except Exception as e:
         page.add(ft.Text(f"Error loading CSV: {e}", color="red"))
         return
 
-    # Create the DataTable
+    # Create the DataTable with initial data (can be empty or all data)
     data_table = ft.DataTable(
         columns=[
+            ft.DataColumn(ft.Text("Date")),
             ft.DataColumn(ft.Text("First name")),
             ft.DataColumn(ft.Text("Last name")),
             ft.DataColumn(ft.Text("order"), numeric=True),
             ft.DataColumn(ft.Text("rate"), numeric=True),
             ft.DataColumn(ft.Text("total"), numeric=True),
             ft.DataColumn(ft.Text("mycheck"), numeric=True),
-
-            
         ],
         rows=[],  # Start with no rows
     )
 
-    # Loop through the DataFrame rows and add them to the DataTable
-    for _, row in df.iterrows():
-        total = row["rate"]*row["order"]
-        mycheck = row["rate"]-2
+    # Initially, populate the data table with all data
+    show_all_data()
 
-
-        data_table.rows.append(
-            ft.DataRow(
-                cells=[
-                    ft.DataCell(ft.Text(row['First_name'])),
-                    ft.DataCell(ft.Text(row['Last_name'])),
-                    ft.DataCell(ft.Text(str(row['order']))),
-                    ft.DataCell(ft.Text(str(row['rate']))),
-                    ft.DataCell(ft.Text(str(total))),
-                    ft.DataCell(ft.Text(str(mycheck))),
-                    
-
-                ]
-            )
-        )
+    # Scrollable table
     scrollable_table = ft.Column(
         controls=[data_table],
         scroll=ft.ScrollMode.ALWAYS  # Enable scrolling
     )
-    # Add the DataTable to the page
+    
+    # Add the scrollable table to the page
     page.add(scrollable_table)
 
     # Print the table rows in the console for debugging
